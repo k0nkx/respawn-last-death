@@ -1,0 +1,69 @@
+local FlashbackEnabled, FlashbackMode, lastDeathCFrame = false, "Last Death", nil
+
+local Locations = {
+    ["UFO"] = CFrame.new(173.939117, 157.757492, -729.281189),
+    ["Military"] = CFrame.new(40.1917458, 25.3513165, -888.561768),
+    ["Warehouse"] = CFrame.new(481.104584, 47.8513107, -71.0164642),
+    ["Arcade"] = CFrame.new(-217.622482, 24.7263184, -296.846191)
+}
+
+local function teleport(location)
+    local character = game.Players.LocalPlayer.Character
+    if character then
+        local rootPart = character:FindFirstChild("HumanoidRootPart")
+        if rootPart and location then
+            rootPart.CFrame = location
+        end
+    end
+end
+
+local function onCharacterAdded(character)
+    task.wait(0.3)
+    if FlashbackEnabled then
+        if FlashbackMode == "Last Death" and lastDeathCFrame then
+            teleport(lastDeathCFrame)
+            lastDeathCFrame = nil
+        else
+            teleport(Locations[FlashbackMode])
+        end
+    end
+end
+
+local function monitorKO()
+    local playerFolder = workspace:WaitForChild("Players"):FindFirstChild(game.Players.LocalPlayer.Name)
+    if not playerFolder then return end
+
+    local koValue = playerFolder:FindFirstChild("BodyEffects") and playerFolder.BodyEffects:FindFirstChild("K.O")
+    if not koValue then return end
+
+    koValue:GetPropertyChangedSignal("Value"):Connect(function()
+        if koValue.Value then
+            local character = game.Players.LocalPlayer.Character
+            if character then
+                local rootPart = character:FindFirstChild("HumanoidRootPart")
+                if rootPart then
+                    lastDeathCFrame = rootPart.CFrame
+                end
+            end
+        end
+    end)
+end
+
+game.Players.LocalPlayer.CharacterAdded:Connect(onCharacterAdded)
+
+ToggleTabs:Toggle({
+    Name = "Flashback",
+    Default = false,
+    Callback = function(value)
+        FlashbackEnabled = value
+        if value then task.spawn(monitorKO) end
+    end
+})
+
+ToggleTabs:Dropdown({
+    Name = "Flashback Mode",
+    Values = {"Last Death", "UFO", "Military", "Warehouse", "Arcade"},
+    Default = "Last Death",
+    Multi = false,
+    Callback = function(value) FlashbackMode = value end
+})
