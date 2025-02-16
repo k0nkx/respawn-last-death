@@ -15,23 +15,23 @@ end
 
 local function FB_OnCharacterAdded(character)
     task.wait(0.3)
+    FB_LastDeathCFrame = nil
     if FB_Enabled and FB_LastDeathCFrame then
         FB_Teleport(FB_LastDeathCFrame)
     end
 end
 
 local function FB_MonitorKO()
+    local playerFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild(LocalPlayer.Name)
+    local koValue = playerFolder and playerFolder:FindFirstChild("BodyEffects") and playerFolder.BodyEffects:FindFirstChild("K.O")
+    
     while FB_Enabled do
-        local playerFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild(LocalPlayer.Name)
-        if playerFolder then
-            local koValue = playerFolder:FindFirstChild("BodyEffects") and playerFolder.BodyEffects:FindFirstChild("K.O")
-            if koValue and koValue.Value then
-                local character = LocalPlayer.Character
-                if character then
-                    local rootPart = character:FindFirstChild("HumanoidRootPart")
-                    if rootPart then
-                        FB_LastDeathCFrame = rootPart.CFrame
-                    end
+        if koValue and koValue.Value then
+            local character = LocalPlayer.Character
+            if character then
+                local rootPart = character:FindFirstChild("HumanoidRootPart")
+                if rootPart then
+                    FB_LastDeathCFrame = rootPart.CFrame
                 end
             end
         end
