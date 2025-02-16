@@ -1,13 +1,13 @@
-local FlashbackEnabled, FlashbackMode, lastDeathCFrame = false, "Last Death", nil
+local FB_Enabled, FB_Mode, FB_LastDeathCFrame = false, "Last Death", nil
 
-local Locations = {
+local FB_Locations = {
     ["UFO"] = CFrame.new(173.939117, 157.757492, -729.281189),
     ["Military"] = CFrame.new(40.1917458, 25.3513165, -888.561768),
     ["Warehouse"] = CFrame.new(481.104584, 47.8513107, -71.0164642),
     ["Arcade"] = CFrame.new(-217.622482, 24.7263184, -296.846191)
 }
 
-local function teleport(location)
+local function FB_Teleport(location)
     local character = game.Players.LocalPlayer.Character
     if character then
         local rootPart = character:FindFirstChild("HumanoidRootPart")
@@ -17,19 +17,19 @@ local function teleport(location)
     end
 end
 
-local function onCharacterAdded(character)
+local function FB_OnCharacterAdded(character)
     task.wait(0.3)
-    if FlashbackEnabled then
-        if FlashbackMode == "Last Death" and lastDeathCFrame then
-            teleport(lastDeathCFrame)
-            lastDeathCFrame = nil
+    if FB_Enabled then
+        if FB_Mode == "Last Death" and FB_LastDeathCFrame then
+            FB_Teleport(FB_LastDeathCFrame)
+            FB_LastDeathCFrame = nil
         else
-            teleport(Locations[FlashbackMode])
+            FB_Teleport(FB_Locations[FB_Mode])
         end
     end
 end
 
-local function monitorKO()
+local function FB_MonitorKO()
     local playerFolder = workspace:WaitForChild("Players"):FindFirstChild(game.Players.LocalPlayer.Name)
     if not playerFolder then return end
 
@@ -42,21 +42,21 @@ local function monitorKO()
             if character then
                 local rootPart = character:FindFirstChild("HumanoidRootPart")
                 if rootPart then
-                    lastDeathCFrame = rootPart.CFrame
+                    FB_LastDeathCFrame = rootPart.CFrame
                 end
             end
         end
     end)
 end
 
-game.Players.LocalPlayer.CharacterAdded:Connect(onCharacterAdded)
+game.Players.LocalPlayer.CharacterAdded:Connect(FB_OnCharacterAdded)
 
 ToggleTabs:Toggle({
     Name = "Flashback",
     Default = false,
     Callback = function(value)
-        FlashbackEnabled = value
-        if value then task.spawn(monitorKO) end
+        FB_Enabled = value
+        if value then task.spawn(FB_MonitorKO) end
     end
 })
 
@@ -65,5 +65,5 @@ ToggleTabs:Dropdown({
     Values = {"Last Death", "UFO", "Military", "Warehouse", "Arcade"},
     Default = "Last Death",
     Multi = false,
-    Callback = function(value) FlashbackMode = value end
+    Callback = function(value) FB_Mode = value end
 })
